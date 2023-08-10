@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://cgcuswr7numr0"]
+
+[ext_resource type="Script" path="res://scripts/camera.gd" id="1_5e7ye"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_aqnsr"]
+[ext_resource type="TileSet" uid="uid://drr088c606q4u" path="res://resources/tileset.tres" id="3_iabqi"]
+[ext_resource type="Script" path="res://scripts/TileMap.gd" id="4_p7v0r"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_aqnsr")
+metadata/_edit_vertical_guides_ = [-896.0]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(4, 4)
+script = ExtResource("1_5e7ye")
+zoom_speed = 0.1
+
+[node name="TileMap" type="TileMap" parent="."]
+tile_set = ExtResource("3_iabqi")
+format = 2
+layer_0/z_index = -1
+layer_0/tile_data = PackedInt32Array(65536, 65536, 1, 65537, 0, 0, -196608, 65536, 1, -196607, 0, 0, -131071, 0, 0, 1, 0, 0, 2, 0, 1, -131070, 0, 1, 3, 0, 2, -65533, 0, 2, -131069, 0, 2, -65532, 65536, 1, -65531, 0, 0, -65530, 0, 0, 131071, 65536, 3, -131073, 65536, 3)
+script = ExtResource("4_p7v0r")
+
+[node name="Timer" type="Timer" parent="TileMap"]
+wait_time = 0.01
+autostart = true
+
+[connection signal="timeout" from="TileMap/Timer" to="TileMap" method="update"]
