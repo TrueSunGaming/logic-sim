@@ -1,0 +1,179 @@
+[gd_scene load_steps=12 format=3 uid="uid://d3r5cvvhrdxmb"]
+
+[ext_resource type="Script" path="res://scripts/ui.gd" id="1_p764q"]
+[ext_resource type="StyleBox" uid="uid://b8ggrbbppaxvb" path="res://resources/panel_style.tres" id="1_ul6hw"]
+[ext_resource type="Texture2D" uid="uid://chnt5p5gp12fp" path="res://resources/buffer_icon.tres" id="3_eojg6"]
+[ext_resource type="Texture2D" uid="uid://c6m1wevmdge3p" path="res://resources/read_icon.tres" id="4_hb260"]
+[ext_resource type="Texture2D" uid="uid://dr5b2y7bxk2s0" path="res://resources/write_icon.tres" id="5_v40pq"]
+[ext_resource type="Texture2D" uid="uid://cexqrd1jqwxs2" path="res://resources/not_icon.tres" id="6_cdad0"]
+[ext_resource type="Texture2D" uid="uid://bn7gql8s5l6f4" path="res://resources/or_icon.tres" id="7_vyt0t"]
+[ext_resource type="Texture2D" uid="uid://b6p1o0fj4d8cw" path="res://resources/and_icon.tres" id="8_n0i6q"]
+[ext_resource type="Texture2D" uid="uid://bcr032gaa5o6n" path="res://resources/xor_icon.tres" id="9_ucqgt"]
+[ext_resource type="Texture2D" uid="uid://dneytqa82br8l" path="res://resources/cross_icon.tres" id="10_q1j6k"]
+[ext_resource type="Texture2D" uid="uid://bvrhqy1p6bglc" path="res://resources/switch_icon.tres" id="11_dqwp7"]
+
+[node name="UI" type="CanvasLayer"]
+script = ExtResource("1_p764q")
+
+[node name="PanelTop" type="Panel" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 50.0
+grow_horizontal = 2
+theme_override_styles/panel = ExtResource("1_ul6hw")
+
+[node name="Button" type="Button" parent="PanelTop"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 10.0
+offset_right = 192.0
+offset_bottom = 42.0
+tooltip_text = "Ctrl+R"
+mouse_filter = 1
+mouse_default_cursor_shape = 2
+text = "Start/Stop Simulation"
+
+[node name="PanelBottom" type="Panel" parent="."]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -100.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = ExtResource("1_ul6hw")
+
+[node name="Buffer" type="TextureButton" parent="PanelBottom"]
+layout_mode = 2
+offset_left = 25.0
+offset_top = 25.0
+offset_right = 75.0
+offset_bottom = 75.0
+tooltip_text = "Wire"
+mouse_filter = 1
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("3_eojg6")
+stretch_mode = 0
+
+[node name="Read" type="TextureButton" parent="PanelBottom"]
+layout_mode = 2
+offset_left = 125.0
+offset_top = 25.0
+offset_right = 175.0
+offset_bottom = 75.0
+tooltip_text = "Read
+
+Reads a wire and uses it as input for a gate."
+mouse_filter = 1
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("4_hb260")
+stretch_mode = 0
+
+[node name="Write" type="TextureButton" parent="PanelBottom"]
+layout_mode = 2
+offset_left = 225.0
+offset_top = 25.0
+offset_right = 275.0
+offset_bottom = 75.0
+tooltip_text = "Write
+
+Reads a gate and writes it to a wire.
+
+If placed next to a Read, the signal will be inputted into the gate that the Read is touching."
+mouse_filter = 1
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("5_v40pq")
+stretch_mode = 0
+
+[node name="Not" type="TextureButton" parent="PanelBottom"]
+layout_mode = 2
+offset_left = 325.0
+offset_top = 25.0
+offset_right = 375.0
+offset_bottom = 75.0
+tooltip_text = "NOT Gate"
+mouse_filter = 1
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("6_cdad0")
+stretch_mode = 0
+
+[node name="Or" type="TextureButton" parent="PanelBottom"]
+layout_mode = 2
+offset_left = 425.0
+offset_top = 25.0
+offset_right = 475.0
+offset_bottom = 75.0
+tooltip_text = "OR Gate"
+mouse_filter = 1
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("7_vyt0t")
+stretch_mode = 0
+
+[node name="And" type="TextureButton" parent="PanelBottom"]
+layout_mode = 2
+offset_left = 525.0
+offset_top = 25.0
+offset_right = 575.0
+offset_bottom = 75.0
+tooltip_text = "AND Gate"
+mouse_filter = 1
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("8_n0i6q")
+stretch_mode = 0
+
+[node name="Xor" type="TextureButton" parent="PanelBottom"]
+layout_mode = 2
+offset_left = 625.0
+offset_top = 25.0
+offset_right = 675.0
+offset_bottom = 75.0
+tooltip_text = "XOR Gate"
+mouse_filter = 1
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("9_ucqgt")
+stretch_mode = 0
+
+[node name="Cross" type="TextureButton" parent="PanelBottom"]
+layout_mode = 2
+offset_left = 725.0
+offset_top = 25.0
+offset_right = 775.0
+offset_bottom = 75.0
+tooltip_text = "Cross
+
+Connects North/South and East/West wires."
+mouse_filter = 1
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("10_q1j6k")
+stretch_mode = 0
+
+[node name="Switch" type="TextureButton" parent="PanelBottom"]
+layout_mode = 2
+offset_left = 825.0
+offset_top = 25.0
+offset_right = 875.0
+offset_bottom = 75.0
+tooltip_text = "Switch / T flip-flop
+
+Will toggle every time it is powered.
+
+If a Switch has no inputs, it can be toggled by clicking."
+mouse_filter = 1
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("11_dqwp7")
+stretch_mode = 0
+
+[connection signal="mouse_entered" from="PanelTop" to="." method="panel_top_mouse_entered"]
+[connection signal="mouse_exited" from="PanelTop" to="." method="panel_top_mouse_exited"]
+[connection signal="pressed" from="PanelTop/Button" to="." method="toggle_sim"]
+[connection signal="mouse_entered" from="PanelBottom" to="." method="panel_bottom_mouse_entered"]
+[connection signal="mouse_exited" from="PanelBottom" to="." method="panel_bottom_mouse_exited"]
+[connection signal="pressed" from="PanelBottom/Buffer" to="." method="select_buffer"]
+[connection signal="pressed" from="PanelBottom/Read" to="." method="select_read"]
+[connection signal="pressed" from="PanelBottom/Write" to="." method="select_write"]
+[connection signal="pressed" from="PanelBottom/Not" to="." method="select_not"]
+[connection signal="pressed" from="PanelBottom/Or" to="." method="select_or"]
+[connection signal="pressed" from="PanelBottom/And" to="." method="select_and"]
+[connection signal="pressed" from="PanelBottom/Xor" to="." method="select_xor"]
+[connection signal="pressed" from="PanelBottom/Cross" to="." method="select_cross"]
+[connection signal="pressed" from="PanelBottom/Switch" to="." method="select_switch"]

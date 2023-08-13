@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://cgcuswr7numr0"]
+[gd_scene load_steps=8 format=3 uid="uid://cgcuswr7numr0"]
 
 [ext_resource type="Script" path="res://scripts/camera.gd" id="1_5e7ye"]
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_aqnsr"]
 [ext_resource type="TileSet" uid="uid://drr088c606q4u" path="res://resources/tileset.tres" id="3_iabqi"]
 [ext_resource type="Script" path="res://scripts/TileMap.gd" id="4_p7v0r"]
+[ext_resource type="PackedScene" uid="uid://d3r5cvvhrdxmb" path="res://scenes/ui.tscn" id="5_2r7xj"]
+[ext_resource type="Texture2D" uid="uid://0qjf3o5l5ts1" path="res://assets/gates.png" id="5_pqj6c"]
+[ext_resource type="Script" path="res://scripts/Selected.gd" id="6_8x5by"]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_aqnsr")
@@ -18,11 +21,25 @@ zoom_speed = 0.1
 tile_set = ExtResource("3_iabqi")
 format = 2
 layer_0/z_index = -1
-layer_0/tile_data = PackedInt32Array(65536, 65536, 1, 65537, 0, 0, -196608, 65536, 1, -196607, 0, 0, -131071, 0, 0, 1, 0, 0, 2, 0, 1, -131070, 0, 1, 3, 0, 2, -65533, 0, 2, -131069, 0, 2, -65532, 65536, 1, -65531, 0, 0, -65530, 0, 0, 131071, 65536, 3, -131073, 65536, 3)
 script = ExtResource("4_p7v0r")
 
-[node name="Timer" type="Timer" parent="TileMap"]
-wait_time = 0.01
+[node name="TickTimer" type="Timer" parent="TileMap"]
+wait_time = 0.001
 autostart = true
 
-[connection signal="timeout" from="TileMap/Timer" to="TileMap" method="update"]
+[node name="SaveTimer" type="Timer" parent="TileMap"]
+wait_time = 30.0
+
+[node name="Selected" type="Sprite2D" parent="TileMap"]
+modulate = Color(1, 1, 1, 0.501961)
+texture = ExtResource("5_pqj6c")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 16, 16)
+script = ExtResource("6_8x5by")
+
+[node name="UI" parent="." instance=ExtResource("5_2r7xj")]
+
+[connection signal="tree_exiting" from="TileMap" to="TileMap" method="_on_tree_exiting"]
+[connection signal="timeout" from="TileMap/TickTimer" to="TileMap" method="tick"]
+[connection signal="timeout" from="TileMap/SaveTimer" to="TileMap" method="save_data"]

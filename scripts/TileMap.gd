@@ -1,4 +1,8 @@
-extends TileMap
+class_name GateGrid extends TileMap
+
+@export var updates_per_tick := 1
+
+const save_location := "user://save.dat"
 
 enum tiles {
 	BUFFER_OFF,
@@ -87,7 +91,7 @@ var types := {}
 var currently_updating: Array[int]
 var update_queue: Array[int]
 
-func is_gate(tile: tiles) -> bool:
+static func is_gate(tile: tiles) -> bool:
 	return [
 		tiles.NOT_OFF,
 		tiles.NOT_ON,
@@ -101,10 +105,11 @@ func is_gate(tile: tiles) -> bool:
 		tiles.SWITCH_ON
 	].has(tile)
 
-func is_non_groupable(tile: tiles) -> bool:
+static func is_non_groupable(tile: tiles) -> bool:
 	return [
 		tiles.READ,
-		tiles.WRITE
+		tiles.WRITE,
+		tiles.CROSS
 	].has(tile)
 
 func compile() -> Array[Dictionary]:
@@ -136,9 +141,10 @@ func compile() -> Array[Dictionary]:
 		
 		index[i] = res.size() - 1
 	
-	# make sure groups are not split
 	for i in range(res.size()):
-		for j in res[i].contains:
+		for j_idx in range(res[i].contains.size()):
+			var j: Vector2i = res[i].contains[j_idx]
+			
 			for k in directions:
 				if not types.has(j + k) or not index.has(j + k): continue
 				if index[j + k] == i: continue
@@ -151,31 +157,70 @@ func compile() -> Array[Dictionary]:
 					index[l] = i
 				
 				res[idx].contains = []
+			
+			for k in directions:
+				if not types.has(j + k): continue
+				if types[j + k] != tiles.CROSS: continue
+				if not types.has(j + k * 2) or not index.has(j + k * 2): continue
+				
+				var idx: int = index[j + k * 2]
+				
+				for l in res[idx].contains:
+					res[i].contains.push_back(l)
+					index[l] = i
+				
+				res[idx].contains = []
 	
-	for i in res:
+	for idx in range(res.size()):
+		var i: Dictionary = res[idx]
 		var middle: Array[Vector2i] = []
+		
+		if i.type == tiles.NOT_OFF: add_to_queue(idx)
 			
 		for j in i.contains:
 			for k in directions:
 				if middle.has(j + k) or not types.has(j + k): continue
-				if (
-					(i.type == tiles.BUFFER_OFF and types[j + k] == tiles.READ) or
-					(is_gate(i.type) and types[j + k] == tiles.WRITE)
-				):
+				
+				if i.type == tiles.BUFFER_OFF and types[j + k] == tiles.READ:
 					middle.push_back(j + k)
+				
+				if is_gate(i.type) and types[j + k] == tiles.WRITE:
+					var double := false
+					
+					for l in directions:
+						if types.has(j + k + l) and types[j + k + l] == tiles.READ: 
+							middle.push_back(j + k + l)
+							double = true
+					
+					if not double:
+						middle.push_back(j + k)
 		
 		for j in middle:
 			for k in directions:
 				if not types.has(j + k) or is_non_groupable(types[j + k]): continue
 				if not index.has(j + k) or i.contains.has(j + k) or i.updates.has(index[j + k]): continue
 				i.updates.push_back(index[j + k])
-				res[index[j + k]].dependencies.push_back(index[i.contains[0]])
+				res[index[j + k]].dependencies.push_back(idx)
 		
 		continue
 	
 	return res
 
 func update() -> void:
+	if not global.simulating:
+		currently_updating = []
+		update_queue = []
+		compiled = []
+		types = {}
+		index = {}
+		values = []
+		next_values = []
+		
+		for i in get_used_cells(0):
+			set_cell(0, i, 0, tile_coords.find_key(non_powered[tile_coords[get_cell_atlas_coords(0, i)]]))
+		
+		return
+	
 	currently_updating = update_queue.duplicate(true)
 	update_queue = []
 	
@@ -183,8 +228,6 @@ func update() -> void:
 		var comp := compiled[i]
 		var type: tiles = comp.type
 		var dependencies: Array = comp.dependencies
-		
-		for j in comp.updates: update_queue.push_back(j)
 		
 		if type == tiles.BUFFER_OFF or type == tiles.OR_OFF or type == tiles.NOT_OFF:
 			var res := false
@@ -197,7 +240,7 @@ func update() -> void:
 		
 		if type == tiles.AND_OFF:
 			var res := true
-			for j in dependencies: res = res or values[j]
+			for j in dependencies: res = res and values[j]
 			
 			next_values[i] = res
 			continue
@@ -210,15 +253,29 @@ func update() -> void:
 			continue
 		
 		if type == tiles.SWITCH_OFF:
+			if dependencies.size() != 0:
+				var res := false
+				for j in dependencies: res = res or values[j]
+				if not res: continue
+			
 			next_values[i] = not values[i]
 			continue
+	
+	for i in currently_updating:
+		if next_values[i] != values[i]:
+			for j in compiled[i].updates: add_to_queue(j)
 	
 	values = next_values.duplicate(true)
 	
 	for i in range(values.size()):
+		var type: tiles = compiled[i].type
 		for j in compiled[i].contains:
-			var cell: Vector2i = tile_coords.find_key(compiled[i].type)
-			set_cell(0, j, 0, powered[cell] if values[i] else non_powered[cell])
+			var cell: Vector2i = tile_coords.find_key(powered[type] if values[i] else non_powered[type])
+			set_cell(0, j, 0, cell)
+
+func tick() -> void:
+	for i in range(updates_per_tick):
+		update()
 
 func mouse_pos() -> Vector2i:
 	return local_to_map(to_local(get_global_mouse_position()))
@@ -231,19 +288,80 @@ func hovering_clickable() -> bool:
 	return [
 		tiles.SWITCH_OFF,
 		tiles.SWITCH_ON
-	].has(hovering())
+	].has(hovering()) and global.simulating
 
-func _ready() -> void:
+func start_simulation() -> void:
+	global.selected = -1
+	
+	save_data()
+	
 	compiled = compile()
 	for i in range(compiled.size()):
-		print(i, compiled[i])
 		values.push_back(false)
+		next_values = values.duplicate(true)
+
+func add_to_queue(idx: int) -> void:
+	if update_queue.has(idx): return
+	update_queue.push_back(idx)
+
+func generate_save_data() -> Dictionary:
+	var res := {}
 	
-	print(values.size())
+	for i in get_used_cells(0):
+		res[i] = tile_coords[get_cell_atlas_coords(0, i)]
+	
+	return res
+
+func load_save_data(data: Dictionary) -> void:
+	for i in data._autosave.keys():
+		var tile: tiles = data._autosave[i]
+		if tile == null: continue
+		
+		var coords: Vector2i = tile_coords.find_key(tile)
+		if coords == null: continue
+		
+		set_cell(0, i, 0, coords)
+
+func save_data() -> void:
+	if global.simulating: return
+	
+	var file := FileAccess.open(save_location, FileAccess.WRITE)
+	
+	file.store_var({
+		_autosave = generate_save_data()
+	}, true)
+	
+	file.close()
+
+func load_data() -> void:
+	if not FileAccess.file_exists(save_location): return
+	
+	var file := FileAccess.open(save_location, FileAccess.READ)
+	
+	var data: Dictionary = file.get_var(true)
+	
+	if data == null: return
+	
+	load_save_data(data)
+
+func _ready() -> void:
+	load_data()
+	
+	global.tilemap = self
 
 func _process(delta: float) -> void:
-	if Input.is_action_just_pressed("place") and hovering() != null:
-		if powered[hovering()] == tiles.SWITCH_ON:
-			if index.has(mouse_pos()):
-				pass
-				update_queue.push_back(index[mouse_pos()])
+	if global.ui != null and not (global.ui.hovering_top or global.ui.hovering_bottom):
+		if global.simulating and Input.is_action_just_pressed("place") and hovering() != null:
+			if powered[hovering()] == tiles.SWITCH_ON:
+				if index.has(mouse_pos()) and compiled[index[mouse_pos()]].dependencies.size() == 0:
+					add_to_queue(index[mouse_pos()])
+	
+		if not global.simulating:
+			if Input.is_action_pressed("place") and global.selected != -1:
+				set_cell(0, mouse_pos(), 0, tile_coords.find_key(global.selected))
+		
+			if Input.is_action_pressed("delete"):
+				set_cell(0, mouse_pos())
+
+func _on_tree_exiting() -> void:
+	save_data()
