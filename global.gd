@@ -8,6 +8,9 @@ var ui: UI
 
 func _input(event: InputEvent) -> void:
 	if Input.is_action_just_pressed("simulate"):
+		if not simulating:
+			tilemap.save_data()
+		
 		simulating = not simulating
 		
 		if simulating:

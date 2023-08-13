@@ -29,6 +29,7 @@ autostart = true
 
 [node name="SaveTimer" type="Timer" parent="TileMap"]
 wait_time = 30.0
+autostart = true
 
 [node name="Selected" type="Sprite2D" parent="TileMap"]
 modulate = Color(1, 1, 1, 0.501961)

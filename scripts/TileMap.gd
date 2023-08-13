@@ -293,8 +293,6 @@ func hovering_clickable() -> bool:
 func start_simulation() -> void:
 	global.selected = -1
 	
-	save_data()
-	
 	compiled = compile()
 	for i in range(compiled.size()):
 		values.push_back(false)
@@ -332,6 +330,8 @@ func save_data() -> void:
 	}, true)
 	
 	file.close()
+	
+	global.ui.set_save_time()
 
 func load_data() -> void:
 	if not FileAccess.file_exists(save_location): return

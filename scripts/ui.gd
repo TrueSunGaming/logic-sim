@@ -37,6 +37,7 @@ func select_switch() -> void:
 
 func _ready() -> void:
 	global.ui = self
+	set_save_time()
 
 func panel_top_mouse_entered() -> void:
 	hovering_top = true
@@ -51,7 +52,14 @@ func panel_bottom_mouse_exited() -> void:
 	hovering_bottom = false
 
 func toggle_sim() -> void:
+	if not global.simulating:
+		global.tilemap.save_data()
+	
 	global.simulating = not global.simulating
 	
 	if global.simulating:
 		global.tilemap.start_simulation() 
+
+func set_save_time() -> void:
+	$PanelTop/Label.text = "Last Saved: " + Time.get_time_string_from_system()
+	
